@@ -1,0 +1,29 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    <section class="login-container">
+        <div class="login-box">
+
+            <h1>Connexion</h1>
+
+            <form method="POST" action="login">
+                <input type="text" name="login" placeholder="Identifiant" />
+                {% if errors.login %}
+                    <p class="form-error"> {{ errors.login }} </p>
+                {% endif %}
+
+                <input type="password" name="password" placeholder="Mot de passe" />
+                {% if errors.password %}
+                    <p class="form-error"> {{ errors.password }} </p>
+                {% endif %}
+
+                <a href="forgot-password">Mot de passe oublié</a>
+
+                <input type="submit" name="submit" value="Connexion" />
+                <a href="register">Je n'ai pas encore de compte</a>
+            </form>
+        </div>
+    </section>
+{% endblock %}

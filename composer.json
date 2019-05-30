@@ -1,0 +1,19 @@
+{
+    "name": "julien/mvc-experimentations",
+    "authors": [
+        {
+            "name": "Julien Guillot",
+            "email": "guillot21julien@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/App",
+            "Core\\": "src/Core"
+        }
+    },
+    "require": {
+        "twig/twig": "^2.0",
+        "vlucas/phpdotenv": "^3.3"
+    }
+}

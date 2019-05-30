@@ -1,0 +1,33 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+    <section class="register-container">
+        <div class="register-box">
+
+            <h1>Inscription</h1>
+
+            <form method="POST" action="register">
+                <input type="text" name="pseudo" placeholder="Identifiant" />
+                {% if errors.pseudo %}
+                    <p class="form-error"> {{ errors.pseudo }} </p>
+                {% endif %}
+
+                <input type="email" name="email" placeholder="Email" />
+                {% if errors.email %}
+                    <p class="form-error"> {{ errors.email }} </p>
+                {% endif %}
+
+                <input type="password" name="password" placeholder="Mot de passe" />
+                {% if errors.password %}
+                    <p class="form-error"> {{ errors.password }} </p>
+                {% endif %}
+
+                <input type="submit" name="submit" value="Inscription" />
+            </form>
+
+            <a href="login">Connexion</a>
+        </div>
+    </section>
+{% endblock %}
