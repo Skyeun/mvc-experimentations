@@ -4,7 +4,7 @@
 namespace Tests\Core\Database;
 
 
-use Core\database\QueryBuilder;
+use Core\Database\QueryBuilder;
 use PHPUnit\Framework\TestCase;
 
 class QueryBuilderTest extends TestCase

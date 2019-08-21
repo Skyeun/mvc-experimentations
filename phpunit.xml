@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<phpunit colors="true">
+<phpunit
+	colors="true"
+	backupGlobals="false"
+	bootstrap="src/bootstrap.php">
+
+	<php>
+		<ini name="error_reporting" value="-1" />
+		<env name="APP_ENV" value="test" />
+		<env name="SHELL_VERBOSITY" value="-1" />
+	</php>
+
     <testsuites>
         <testsuite name="Core test suite">
             <directory>tests/Core</directory>

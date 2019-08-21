@@ -6,7 +6,7 @@ namespace Core\Database;
 
 use PDO;
 
-class Database
+class Connector
 {
     private static $instance;
 
@@ -30,7 +30,7 @@ class Database
         // Instantiate bdd connexion
         try {
             $this->db =
-                new PDO("mysql:host=". $configs('host') . ";dbname=" . $configs['database'],
+                new PDO("mysql:host=". $configs['host'] . ";dbname=" . $configs['database'],
                     $configs['user'],
                     $configs['password']);
 
@@ -48,7 +48,7 @@ class Database
     /**
      * Get instance of Database
      *
-     * @return Database
+     * @return Connector
      * @throws \RuntimeException when database connexion was never instantiated
      */
     public static function getInstance() {

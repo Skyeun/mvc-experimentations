@@ -17,7 +17,7 @@ class TwigController
 
     public function __construct()
     {
-        $loader = new Twig_Loader_Filesystem('src/App/Views');
+        $loader = new Twig_Loader_Filesystem(dirname(__DIR__) . '/App/Views');
 
         // Place cache later
         $this->_twig = new Twig_Environment($loader, array());

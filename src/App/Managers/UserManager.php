@@ -10,7 +10,7 @@ namespace App\Managers;
 
 
 use App\Models\User;
-use Core\Database;
+use Core\Database\Connector;
 use Core\ManagerInterface;
 
 /**
@@ -20,7 +20,7 @@ use Core\ManagerInterface;
 class UserManager implements ManagerInterface
 {
     /**
-     * @var Database
+     * @var Connector
      */
     private $_bdd;
 
@@ -29,7 +29,7 @@ class UserManager implements ManagerInterface
      */
     public function __construct()
     {
-        $this->_bdd = Database::getInstance();
+        $this->_bdd = Connector::getInstance();
     }
 
     /**

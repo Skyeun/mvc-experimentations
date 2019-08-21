@@ -1,19 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: julien
- * Date: 14/12/18
- * Time: 21:28
- */
-
-namespace Core;
 
 
-/**
- * Class Model
- * @package Core
- */
-class Model
+namespace Core\Model;
+
+
+class AbstractModel
 {
     /**
      * Populate object with provided data

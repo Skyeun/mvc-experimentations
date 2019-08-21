@@ -1,18 +1,13 @@
 ###> Vendor files ###
 /vendor/
-composer.lock
 ###< Vendor files ###
 
-###> PHPUnit ###
-.phpunit.result.cache
-###< PHPUnit ###
+###> Config files ###
+config/.env.local
+config/.env.test
+###< Config files ###
 
 ###> Miscelianous ###
 .idea/
+.vscode/
 ###< Miscelianous ###
-
-###> Config files ###
-.env
-.env.local
-.env.test
-###< Config files ###

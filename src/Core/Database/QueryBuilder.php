@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Core\database;
+namespace Core\Database;
 
 
 class QueryBuilder
@@ -32,11 +32,11 @@ class QueryBuilder
     private $maxResults = null;
 
     /**
-     * The array of DQL parts collected.
+     * The array of SQL parts collected.
      *
      * @var array
      */
-    private $queryParts = [
+    private $sqlParts = [
         'distinct' => false,
         'select'  => [],
         'from'    => [],
@@ -79,12 +79,12 @@ class QueryBuilder
 
     private function getSqlForSelect()
     {
-        $selectParts = $this->queryParts['select'];
-        $fromParts = $this->queryParts['from'];
-        $whereParts = $this->queryParts['where'];
+        $selectParts = $this->sqlParts['select'];
+        $fromParts = $this->sqlParts['from'];
+        $whereParts = $this->sqlParts['where'];
 
         $sql = 'SELECT '
-             . ($this->queryParts['distinct'] ? 'DISTINCT ' : '')
+             . ($this->sqlParts['distinct'] ? 'DISTINCT ' : '')
              . (is_array($selectParts) && sizeof($selectParts) > 0 ? implode(', ', $selectParts) : '*');
 
         if (!empty($fromParts)) {
@@ -134,7 +134,7 @@ class QueryBuilder
             return $this;
         }
 
-        $this->queryParts['select'][] = $field;
+        $this->sqlParts['select'][] = $field;
 
         return $this;
     }
@@ -163,35 +163,35 @@ class QueryBuilder
 
     public function from(string $table)
     {
-        $this->queryParts['from'][] = $table;
+        $this->sqlParts['from'][] = $table;
 
         return $this;
     }
 
     public function where(string $condition)
     {
-        $this->queryParts['where']['and'] = [$condition];
+        $this->sqlParts['where']['and'] = [$condition];
 
         return $this;
     }
 
     public function andWhere(string $condition)
     {
-        $this->queryParts['where']['and'][] = $condition;
+        $this->sqlParts['where']['and'][] = $condition;
 
         return $this;
     }
 
     public function orWhere(string $condition)
     {
-        $this->queryParts['where']['or'][] = $condition;
+        $this->sqlParts['where']['or'][] = $condition;
 
         return $this;
     }
 
     public function distinct(bool $distinct)
     {
-        $this->queryParts['distinct'] = $distinct;
+        $this->sqlParts['distinct'] = $distinct;
 
         return $this;
     }
