@@ -63,12 +63,17 @@ class Connector
      * Execute SQL query with parameters
      *
      * @param string $query
-     * @param array $parameters
+     * @param array|null $parameters
      * @return bool
      */
-    public function query(string $query, array $parameters)
+    public function getQueryResults(string $query, ?array $parameters = null)
     {
         $query = $this->db->prepare($query);
-        return $query->execute($parameters);
+
+        if ($parameters) {
+        	return $query->execute($parameters);
+		} else {
+			return $query->execute();
+		}
     }
 }

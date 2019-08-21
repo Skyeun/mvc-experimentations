@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 class QueryBuilderTest extends TestCase
 {
-    public function testSelectQuery()
+    public function testSimpleQuery()
     {
-        $query = (new QueryBuilder())
+        $query = (new QueryBuilder(true))
             ->select('name')
             ->from('posts')
             ->getQuery();
@@ -19,9 +19,19 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals('SELECT name FROM posts', $query);
     }
 
-    public function testSelectDistinctQuery()
+	public function testWithAlias()
+	{
+		$query = (new QueryBuilder(true))
+			->select('name')
+			->from('posts', 'p')
+			->getQuery();
+
+		$this->assertEquals('SELECT name FROM posts as p', $query);
+    }
+
+    public function testSelectWithDistinct()
     {
-        $query = (new QueryBuilder())
+        $query = (new QueryBuilder(true))
             ->select('name')
             ->distinct(true)
             ->from('posts')
@@ -32,56 +42,68 @@ class QueryBuilderTest extends TestCase
 
     public function testSelectAllQuery()
     {
-        $query = (new QueryBuilder())
+        $query = (new QueryBuilder(true))
             ->from('posts')
             ->getQuery();
 
         $this->assertEquals('SELECT * FROM posts', $query);
     }
 
-    public function testSelectWhereQuery()
+    public function testSelectWithWhere()
     {
-        $query = (new QueryBuilder())
+        $query = (new QueryBuilder(true))
             ->from('posts')
             ->where('name = "John"')
             ->getQuery();
 
-        $this->assertEquals('SELECT * FROM posts WHERE name = "John"', $query);
+        $this->assertEquals('SELECT * FROM posts WHERE (name = "John")', $query);
     }
 
-    public function testSelectAndWhereQuery()
+    public function testSelectWithAndWhere()
     {
-        $query = (new QueryBuilder())
+        $query = (new QueryBuilder(true))
             ->from('posts')
-            ->where('name = "John"')
-            ->andWhere('age > 41')->getQuery();
-
-        $this->assertEquals('SELECT * FROM posts WHERE name = "John" AND age > 41', $query);
-    }
-
-    public function testSelectOrWhereQuery()
-    {
-        $query = (new QueryBuilder())->from('posts')
-            ->where('name = "John"')
-            ->orWhere('age > 41')
+            ->where('name = "John"', 'age > 41')
             ->getQuery();
 
-        $this->assertEquals('SELECT * FROM posts WHERE name = "John" OR age > 41', $query);
+        $this->assertEquals('SELECT * FROM posts WHERE (name = "John") AND (age > 41)', $query);
     }
 
-    public function testSelectHavingQuery()
+    public function testSelectWithOrWhere()
     {
-        $this->markTestSkipped('TODO: Implement this test!');
+        $query = (new QueryBuilder(true))->from('posts')
+            ->where('name = "John" OR age > 41')
+            ->getQuery();
+
+        $this->assertEquals('SELECT * FROM posts WHERE (name = "John" OR age > 41)', $query);
     }
 
-    public function testSelectAndHaving()
-    {
-        $this->markTestSkipped('TODO: Implement this test!');
+	public function testSelectWithComplexWhere()
+	{
+		$query = (new QueryBuilder(true))->from('posts')
+			->where('name = "John" OR age > 41')
+			->where('city = "New-York"')
+			->getQuery();
+
+		$query2 = (new QueryBuilder(true))->from('posts')
+			->where('name = "John" OR age > 41', 'city = "New-York"')
+			->getQuery();
+
+		$this->assertEquals('SELECT * FROM posts WHERE (name = "John" OR age > 41) AND (city = "New-York")', $query);
+		$this->assertEquals($query, $query2);
     }
 
-    public function testSelectOrHaving()
+    public function testSelectWithHaving()
     {
-        $this->markTestSkipped('TODO: Implement this test!');
+		$query = (new QueryBuilder(true))
+			->select('client')
+			->select('SUM(price)')
+			->from('invoice')
+			->having('SUM(price) > 40')
+			->groupBy('client')
+			->getQuery();
+
+		$this->assertEquals('SELECT client, SUM(price) FROM invoice GROUP BY (client) HAVING (SUM(price) > 40)', $query);
     }
 
     public function testGroupByQuery()

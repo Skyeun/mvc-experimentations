@@ -11,48 +11,71 @@ class QueryBuilder
     const DELETE = 1;
     const UPDATE = 2;
 
+	/**
+	 * The instance of database connection.
+	 *
+	 * @var Connector
+	 */
+    private $connector;
+
+	/**
+	 * The query type
+	 *
+	 * @var integer
+	 */
     private $type;
 
-    private $alias;
-
+	/**
+	 * The query constructed from provided parameters.
+	 *
+	 * @var string
+	 */
     private $query;
 
-    /**
+	/**
+	 * The array of SQL parts collected.
+	 *
+	 * @var array
+	 */
+	private $sqlParts = [
+		'select'  		=> [],
+		'from'    		=> [],
+		'join'    		=> [],
+		'set'     		=> [],
+		'where'   		=> [],
+		'groupBy' 		=> [],
+		'orderBy' 		=> [],
+		'having'  		=> [],
+		'distinct' 		=> false,
+		'parameters'	=> null,
+	];
+
+	/**
      * The index of the first result to retrieve.
      *
      * @var integer
      */
     private $firstResult = null;
 
-    /**
+	/**
      * The maximum number of results to retrieve.
      *
      * @var integer|null
      */
     private $maxResults = null;
 
-    /**
-     * The array of SQL parts collected.
-     *
-     * @var array
-     */
-    private $sqlParts = [
-        'distinct' => false,
-        'select'  => [],
-        'from'    => [],
-        'join'    => [],
-        'set'     => [],
-        'where'   => null,
-        'groupBy' => [],
-        'having'  => null,
-        'orderBy' => []
-    ];
+    private $testMode = false;
 
-    public function __construct(string $alias = null)
-    {
-        if ($alias !== null) {
-            $this->alias = $alias;
-        }
+	/**
+	 * @param bool $testMode - Allow QueryBuilder to be used without being connected to a database.
+	 */
+	public function __construct(bool $testMode = false)
+	{
+		$this->testMode = $testMode;
+
+		if (!$testMode) {
+			$this->connector = Connector::getInstance();
+		}
     }
 
     public function getQuery()
@@ -77,44 +100,40 @@ class QueryBuilder
         return $query;
     }
 
-    private function getSqlForSelect()
+    private function getSqlForSelect(): string
     {
-        $selectParts = $this->sqlParts['select'];
-        $fromParts = $this->sqlParts['from'];
-        $whereParts = $this->sqlParts['where'];
+    	$sql = ['SELECT'];
 
-        $sql = 'SELECT '
-             . ($this->sqlParts['distinct'] ? 'DISTINCT ' : '')
-             . (is_array($selectParts) && sizeof($selectParts) > 0 ? implode(', ', $selectParts) : '*');
+    	if ($this->sqlParts['distinct']) {
+    		$sql[] = 'DISTINCT';
+		}
 
-        if (!empty($fromParts)) {
-            $sql .= ' FROM '
-                 . (implode(', ', $fromParts));
-        }
+    	$sql[] = !empty($this->sqlParts['select']) ? join(', ', $this->sqlParts['select']): '*';
 
-        if ($whereParts !== null && !empty($whereParts)) {
-            $sql .= ' WHERE ';
+    	$sql[] = 'FROM';
+    	$sql[] = $this->buildFrom();
 
-            if (array_key_exists('and', $whereParts) && is_array($whereParts['and'])) {
-                $sql .= (implode(' AND ', $whereParts['and']));
-            }
+		$sql = array_merge($sql, $this->add('groupBy', 'GROUP BY'));
+		$sql = array_merge($sql, $this->add('where', 'WHERE'));
+		$sql = array_merge($sql, $this->add('having', 'HAVING'));
+		$sql = array_merge($sql, $this->add('orderBy', 'ORDER BY'));
 
-            if (array_key_exists('or', $whereParts) && is_array($whereParts['or'])) {
-                $sql .= ' OR ' . (implode(' OR ', $whereParts['or']));
-            }
-        }
+		if ($this->maxResults) {
+			$sql[] = 'LIMIT';
+			$sql[] = $this->maxResults;
+		}
 
-        return $sql;
+        return join(' ', $sql);
     }
 
-    private function getSqlForDelete()
+    private function getSqlForDelete(): string
     {
         $sql = 'DELETE';
 
         return $sql;
     }
 
-    private function getSqlForUpdate()
+    private function getSqlForUpdate(): string
     {
         $sql = 'UPDATE';
 
@@ -123,10 +142,20 @@ class QueryBuilder
 
     public function execute()
     {
+    	if ($this->testMode) {
+    		throw new \RuntimeException("Cannot execute request while being in test mode");
+		}
+
         $query = $this->getQuery();
+
+        if ($this->sqlParts['parameters']) {
+			return $this->connector->getQueryResults($query, $this->sqlParts['parameters']);
+		} else {
+			return $this->connector->getQueryResults($query);
+		}
     }
 
-    public function select(string $field)
+    public function select(string $field): self
     {
         $this->type = self::SELECT;
 
@@ -139,7 +168,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function delete(bool $delete = false)
+    public function delete(bool $delete = false): self
     {
         $this->type = self::DELETE;
 
@@ -150,7 +179,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function update(bool $update = false)
+    public function update(bool $update = false): self
     {
         $this->type = self::UPDATE;
 
@@ -161,88 +190,111 @@ class QueryBuilder
         return $this;
     }
 
-    public function from(string $table)
+    public function from(string $table, ?string $alias = null): self
     {
-        $this->sqlParts['from'][] = $table;
+		if ($alias) {
+			$this->sqlParts['from'][$alias] = $table;
+		} else {
+			$this->sqlParts['from'][] = $table;
+		}
+
+		return $this;
+    }
+
+    public function where(string ...$condition): self
+    {
+        $this->sqlParts['where'] = array_merge($this->sqlParts['where'], $condition);
 
         return $this;
     }
 
-    public function where(string $condition)
-    {
-        $this->sqlParts['where']['and'] = [$condition];
+	public function parameters(array $parameters): self
+	{
+		$this->sqlParts['parameters'] = $parameters;
 
-        return $this;
+		return $this;
     }
 
-    public function andWhere(string $condition)
-    {
-        $this->sqlParts['where']['and'][] = $condition;
-
-        return $this;
-    }
-
-    public function orWhere(string $condition)
-    {
-        $this->sqlParts['where']['or'][] = $condition;
-
-        return $this;
-    }
-
-    public function distinct(bool $distinct)
+    public function distinct(bool $distinct): self
     {
         $this->sqlParts['distinct'] = $distinct;
 
         return $this;
     }
 
-    public function having()
+    public function having(string ...$condition): self
+    {
+    	$this->sqlParts['having'] = array_merge($this->sqlParts['having'], $condition);
+
+        return $this;
+    }
+
+    public function groupBy(string ...$groupBy): self
+    {
+    	$this->sqlParts['groupBy'] = array_merge($this->sqlParts['groupBy'], $groupBy);
+
+        return $this;
+    }
+
+    public function orderBy(string ...$orderBy): self
+    {
+		$this->sqlParts['orderBy'] = array_merge($this->sqlParts['orderBy'], $orderBy);
+
+        return $this;
+    }
+
+    public function limit(int $limit): self
+    {
+    	$this->maxResults = $limit;
+
+        return $this;
+    }
+
+    public function leftJoin(): self
     {
         return $this;
     }
 
-    public function andHaving()
+    public function rightJoin(): self
     {
         return $this;
     }
 
-    public function orHaving()
+    public function innerJoin(): self
     {
         return $this;
     }
 
-    public function groupBy()
+    public function join(): self
     {
         return $this;
     }
 
-    public function orderBy()
-    {
-        return $this;
+	private function buildFrom(): string
+	{
+		$from = [];
+
+		foreach ($this->sqlParts['from'] as $key => $value) {
+			if (is_string($key)) {
+				$from[] = "$value as $key";
+			} else {
+				$from[] = $value;
+			}
+		}
+
+		return join(', ', $from);
     }
 
-    public function limit()
-    {
-        return $this;
-    }
+	private function add(string $partName, string $query): array
+	{
+		$sql = [];
 
-    public function leftJoin()
-    {
-        return $this;
-    }
+		if (!empty($this->sqlParts[$partName])) {
+			$sql[] = $query;
 
-    public function rightJoin()
-    {
-        return $this;
-    }
+			$sql[] = "(" . join(') AND (', $this->sqlParts[$partName]) . ")";
+		}
 
-    public function innerJoin()
-    {
-        return $this;
-    }
-
-    public function join()
-    {
-        return $this;
+		return $sql;
     }
 }

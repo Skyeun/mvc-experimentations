@@ -1,7 +1,10 @@
 <?php
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
-require_once dirname(__DIR__) . '/config/routing/router.php';
+
+if (getenv('APP_ENV') !== 'test') {
+	require_once dirname(__DIR__) . '/config/routing/router.php';
+}
 
 use Core\Database\Connector;
 use Dotenv\Dotenv;
