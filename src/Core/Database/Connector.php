@@ -6,7 +6,7 @@ namespace Core\Database;
 
 use PDO;
 
-class Connector
+final class Connector
 {
     private static $instance;
 
@@ -40,6 +40,8 @@ class Connector
                 $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 $this->db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             }
+
+			self::$instance = $this;
         } catch (\Exception $exception) {
             throw new \PDOException("Could not connect with database. \n" . $exception->getMessage());
         }

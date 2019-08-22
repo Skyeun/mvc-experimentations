@@ -2,13 +2,9 @@
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-if (getenv('APP_ENV') !== 'test') {
-	require_once dirname(__DIR__) . '/config/routing/router.php';
-}
-
 use Core\Database\Connector;
+use DI\ContainerBuilder;
 use Dotenv\Dotenv;
-
 
 if (file_exists(dirname(__DIR__) . '/config/.env.local')) {
 	(Dotenv::create(dirname(__DIR__) . '/config/', '.env'))->load();
@@ -30,3 +26,14 @@ $database = new Connector([
 
 if(session_status() == PHP_SESSION_NONE)
 	session_start();
+
+if (getenv('APP_ENV') !== 'test') {
+	require_once dirname(__DIR__) . '/config/routing/router.php';
+}
+
+$containerBuilder = new ContainerBuilder();
+$container = $containerBuilder
+	->useAnnotations(true)
+	->useAutowiring(true)
+	->addDefinitions(dirname(__DIR__) . '/config/services/services.php')
+	->build();

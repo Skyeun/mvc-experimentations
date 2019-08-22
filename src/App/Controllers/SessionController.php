@@ -11,13 +11,13 @@ namespace App\Controllers;
 
 use App\Managers\SessionManager;
 use App\Models\Session;
-use Core\BaseController;
+use Core\Controller\AbstractController;
 
 /**
  * Class SessionController
  * @package App\Controllers
  */
-class SessionController extends BaseController
+class SessionController extends AbstractController
 {
     /**
      * @var SessionManager
@@ -29,7 +29,7 @@ class SessionController extends BaseController
      */
     public function __construct()
     {
-        $this->init();
+        parent::__construct();
 
         $this->_manager = new SessionManager();
     }

@@ -4,7 +4,7 @@
 namespace Core\Router;
 
 
-class Router
+final class Router
 {
 	/**
 	 * @var array

@@ -89,7 +89,10 @@ class QueryBuilderTest extends TestCase
 			->where('name = "John" OR age > 41', 'city = "New-York"')
 			->getQuery();
 
-		$this->assertEquals('SELECT * FROM posts WHERE (name = "John" OR age > 41) AND (city = "New-York")', $query);
+		$this->assertEquals(
+			'SELECT * FROM posts WHERE (name = "John" OR age > 41) AND (city = "New-York")',
+			$query
+		);
 		$this->assertEquals($query, $query2);
     }
 
@@ -103,22 +106,54 @@ class QueryBuilderTest extends TestCase
 			->groupBy('client')
 			->getQuery();
 
-		$this->assertEquals('SELECT client, SUM(price) FROM invoice GROUP BY (client) HAVING (SUM(price) > 40)', $query);
+		$this->assertEquals(
+			'SELECT client, SUM(price) FROM invoice GROUP BY client HAVING (SUM(price) > 40)',
+			$query
+		);
     }
 
     public function testGroupByQuery()
     {
-        $this->markTestSkipped('TODO: Implement this test!');
+		$query = (new QueryBuilder(true))
+			->select('client')
+			->from('invoice')
+			->groupBy('client')
+			->getQuery();
+
+		$this->assertEquals(
+			'SELECT client FROM invoice GROUP BY client',
+			$query
+		);
     }
 
     public function testOrderByQuery()
     {
-        $this->markTestSkipped('TODO: Implement this test!');
+		$query = (new QueryBuilder(true))
+			->select('client')
+			->from('invoice')
+			->orderBy('client ASC')
+			->orderBy('price DESC')
+			->getQuery();
+
+		$this->assertEquals(
+			'SELECT client FROM invoice ORDER BY client ASC, price DESC',
+			$query
+		);
     }
 
     public function testLimitQuery()
     {
-        $this->markTestSkipped('TODO: Implement this test!');
+		$query = (new QueryBuilder(true))
+			->select('client')
+			->from('invoice')
+			->orderBy('client ASC')
+			->limit(5)
+			->getQuery();
+
+		$this->assertEquals(
+			'SELECT client FROM invoice ORDER BY client ASC LIMIT 5',
+			$query
+		);
     }
 
     public function testLeftJoinQuery()

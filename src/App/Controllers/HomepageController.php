@@ -9,16 +9,16 @@
 namespace App\Controllers;
 
 
-use Core\BaseController;
+use Core\Controller\AbstractController;
 
-class HomepageController extends BaseController
+class HomepageController extends AbstractController
 {
     /**
      * LoginController constructor.
      */
     public function __construct()
     {
-        $this->init();
+        parent::__construct();
     }
 
     public function homepageAction()

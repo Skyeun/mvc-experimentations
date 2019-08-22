@@ -5,13 +5,13 @@ namespace App\Controllers;
 use App\Managers\UserManager;
 use App\Models\Session;
 use App\Models\User;
-use Core\BaseController;
+use Core\Controller\AbstractController;
 
 /**
  * Class LoginController
  * @package App\Controllers
  */
-class LoginController extends BaseController {
+class LoginController extends AbstractController {
 
     /**
      * @var UserManager
@@ -24,7 +24,7 @@ class LoginController extends BaseController {
      */
     public function __construct()
     {
-        $this->init();
+    	parent::__construct();
 
         $this->_manager = new UserManager();
         $this->_session = new SessionController();

@@ -4,7 +4,7 @@
 namespace Core\Database;
 
 
-class QueryBuilder
+final class QueryBuilder
 {
     /* The query types. */
     const SELECT = 0;
@@ -41,12 +41,11 @@ class QueryBuilder
 		'select'  		=> [],
 		'from'    		=> [],
 		'join'    		=> [],
-		'set'     		=> [],
 		'where'   		=> [],
-		'groupBy' 		=> [],
 		'orderBy' 		=> [],
 		'having'  		=> [],
 		'distinct' 		=> false,
+		'groupBy' 		=> null,
 		'parameters'	=> null,
 	];
 
@@ -64,6 +63,11 @@ class QueryBuilder
      */
     private $maxResults = null;
 
+	/**
+	 * Is QueryBuilder used without real connexion with database
+	 *
+	 * @var bool
+	 */
     private $testMode = false;
 
 	/**
@@ -109,18 +113,21 @@ class QueryBuilder
 		}
 
     	$sql[] = !empty($this->sqlParts['select']) ? join(', ', $this->sqlParts['select']): '*';
+    	$sql[] = 'FROM ' . $this->buildFrom();
 
-    	$sql[] = 'FROM';
-    	$sql[] = $this->buildFrom();
+    	if ($this->sqlParts['groupBy']) {
+			$sql[] = 'GROUP BY ' . $this->sqlParts['groupBy'];
+		}
 
-		$sql = array_merge($sql, $this->add('groupBy', 'GROUP BY'));
 		$sql = array_merge($sql, $this->add('where', 'WHERE'));
 		$sql = array_merge($sql, $this->add('having', 'HAVING'));
-		$sql = array_merge($sql, $this->add('orderBy', 'ORDER BY'));
+
+		if (!empty($this->sqlParts['orderBy'])) {
+			$sql[] = 'ORDER BY ' . join(', ', $this->sqlParts['orderBy']);
+		}
 
 		if ($this->maxResults) {
-			$sql[] = 'LIMIT';
-			$sql[] = $this->maxResults;
+			$sql[] = 'LIMIT ' . $this->maxResults;
 		}
 
         return join(' ', $sql);
@@ -229,16 +236,16 @@ class QueryBuilder
         return $this;
     }
 
-    public function groupBy(string ...$groupBy): self
+    public function groupBy(string $groupBy): self
     {
-    	$this->sqlParts['groupBy'] = array_merge($this->sqlParts['groupBy'], $groupBy);
+    	$this->sqlParts['groupBy'] = $groupBy;
 
         return $this;
     }
 
-    public function orderBy(string ...$orderBy): self
+    public function orderBy(string $orderBy): self
     {
-		$this->sqlParts['orderBy'] = array_merge($this->sqlParts['orderBy'], $orderBy);
+		$this->sqlParts['orderBy'][] = $orderBy;
 
         return $this;
     }
@@ -248,6 +255,13 @@ class QueryBuilder
     	$this->maxResults = $limit;
 
         return $this;
+    }
+
+	public function offset(int $offset): self
+	{
+		$this->firstResult = $offset;
+
+		return $this;
     }
 
     public function leftJoin(): self

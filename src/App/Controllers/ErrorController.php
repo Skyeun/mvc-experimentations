@@ -9,13 +9,13 @@
 namespace App\Controllers;
 
 
-use Core\BaseController;
+use Core\Controller\AbstractController;
 
-class ErrorController extends BaseController
+class ErrorController extends AbstractController
 {
     public function __construct()
     {
-        $this->init();
+        parent::__construct();
     }
 
     public function NoRouteAction() {
